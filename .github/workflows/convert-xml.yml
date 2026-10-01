@@ -1,0 +1,27 @@
+name: Convert to XML
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Convert .cat and .gst files to .xml
+        run: |
+          mkdir -p xml
+          for file in *.cat *.gst; do
+            [ -e "$file" ] || continue
+            cp "$file" "xml/${file%.*}.xml"
+          done
+          echo "Converted $(ls xml | wc -l) files"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: xml
+          path: xml/*.xml
+          if-no-files-found: error
