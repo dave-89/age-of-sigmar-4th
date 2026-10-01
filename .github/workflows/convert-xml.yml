@@ -5,6 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   convert:
     runs-on: ubuntu-latest
@@ -20,8 +23,24 @@ jobs:
           done
           echo "Converted $(ls xml | wc -l) files"
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: xml
-          path: xml/*.xml
-          if-no-files-found: error
+      - name: Create zip
+        run: |
+          cd xml
+          zip -q "../age-of-sigmar-4th-xml.zip" *.xml
+          cd ..
+          unzip -l age-of-sigmar-4th-xml.zip | tail -2
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="xml-latest"
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release delete "$TAG" --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag
+          fi
+          gh release create "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "XML data files" \
+            --notes "All .cat and .gst data files converted to XML, zipped." \
+            --prerelease \
+            age-of-sigmar-4th-xml.zip
