@@ -23,9 +23,10 @@ jobs:
       - name: Sync files from upstream (excluding workflows)
         id: sync
         run: |
-          git clone --depth 1 --branch "${UPSTREAM_BRANCH}" "https://github.com/${UPSTREAM_REPO}.git" upstream
-          rsync -a --delete --exclude '.git' --exclude '.github' upstream/ ./
-          rm -rf upstream
+          UPSTREAM_DIR="${RUNNER_TEMP}/upstream"
+          git clone --depth 1 --branch "${UPSTREAM_BRANCH}" "https://github.com/${UPSTREAM_REPO}.git" "$UPSTREAM_DIR"
+          rsync -a --delete --exclude '.git' --exclude '.github' "$UPSTREAM_DIR/" ./
+          rm -rf "$UPSTREAM_DIR"
           if git diff --quiet; then
             echo "No upstream changes to sync."
             echo "changed=false" >> "$GITHUB_OUTPUT"
