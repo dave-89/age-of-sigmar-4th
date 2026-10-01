@@ -23,4 +23,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: xml
-          path: xml/
+          path: xml/*.xml
+          if-no-files-found: error
