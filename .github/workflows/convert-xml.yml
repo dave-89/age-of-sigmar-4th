@@ -34,13 +34,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG="xml-latest"
-          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
-            gh release delete "$TAG" --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag
-          fi
+          DATE=$(date -u +%Y-%m-%d)
+          N=1
+          while gh release view "xml-${DATE}-${N}" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; do
+            N=$((N + 1))
+          done
+          TAG="xml-${DATE}-${N}"
           gh release create "$TAG" \
             --repo "$GITHUB_REPOSITORY" \
-            --title "XML data files" \
+            --title "XML data files ${DATE} #${N}" \
             --notes "All .cat and .gst data files converted to XML, zipped." \
             --prerelease \
             age-of-sigmar-4th-xml.zip
